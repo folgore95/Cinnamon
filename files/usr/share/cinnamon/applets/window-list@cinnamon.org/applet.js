@@ -299,6 +299,8 @@ AppMenuButton.prototype = {
                 Lang.bind(this, this.setDisplayTitle));
         this._updateTileTypeId = this.metaWindow.connect('notify::tile-type',
                 Lang.bind(this, this.setDisplayTitle));
+        this._updateIconId = this.metaWindow.connect('notify::icon',
+                Lang.bind(this, this.setIcon));
 
         this.onPreviewChanged();
 
@@ -323,6 +325,7 @@ AppMenuButton.prototype = {
 
         this.setDisplayTitle();
         this.onFocus()
+        this.setIcon();
 
         if (this.alert)
             this.getAttention();
@@ -341,8 +344,10 @@ AppMenuButton.prototype = {
     },
 
     onPanelEditModeChanged: function() {
+        let editMode = global.settings.get_boolean("panel-edit-mode");
         if (this._draggable)
-            this._draggable.inhibit = global.settings.get_boolean("panel-edit-mode");
+            this._draggable.inhibit = editMode;
+        this.actor.reactive = !editMode;
     },
 
     onScrollModeChanged: function() {
@@ -478,6 +483,7 @@ AppMenuButton.prototype = {
     destroy: function() {
         this.metaWindow.disconnect(this._updateCaptionId);
         this.metaWindow.disconnect(this._updateTileTypeId);
+        this.metaWindow.disconnect(this._updateIconId);
         this._tooltip.destroy();
         if (this.rightClickMenu) {
             this.rightClickMenu.destroy();
@@ -517,7 +523,6 @@ AppMenuButton.prototype = {
         } else {
             this.actor.remove_style_pseudo_class('focus');
         }
-        this.setIcon();
     },
 
     _onButtonRelease: function(actor, event) {
